@@ -21,8 +21,8 @@ public class Task4 implements Task {
 	private List<ApiPersonDto> convert(List<Person> persons) {
 
 		return persons.stream()
-				.map(v -> convert(v))
-				.collect(Collectors.toList());
+		  .map(Task4::convert)
+		  .collect(Collectors.toList());
 	}
 
 	private static ApiPersonDto convert(Person person) {

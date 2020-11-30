@@ -48,12 +48,12 @@ public class Task8 implements Task {
 	// словарь id персоны -> ее имя
 	public Map<Integer, String> getPersonNames(Collection<Person> persons) {
 		return persons.stream()
-		  .collect(Collectors.toMap(Person::getId, Person::getFirstName, (oldKey, newKey) -> oldKey));
+		  .collect(Collectors.toMap(Person::getId, Person::getFirstName, (a, b) -> a));
 	}
 
 	// есть ли совпадающие в двух коллекциях персоны?
 	public boolean hasSamePersons(Collection<Person> persons1, Collection<Person> persons2) {
-		return persons1.stream().anyMatch(v -> persons2.contains((v)));
+		return persons1.stream().anyMatch(persons2::contains);
 	}
 
 	//...

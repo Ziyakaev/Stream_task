@@ -24,15 +24,13 @@ public class Task6 implements Task {
   private Set<String> getPersonDescriptions(Collection<Person> persons,
                                             Map<Integer, Set<Integer>> personAreaIds,
                                             Collection<Area> areas) {
-    Map<Integer, String> idPerson = persons.stream()
-            .collect(Collectors.toMap(Person::getId, Person::getFirstName));
     Map<Integer, String> idArea = areas.stream()
-            .collect(Collectors.toMap(Area::getId, Area::getName));
-    return personAreaIds.entrySet()
-            .stream()
-            .flatMap(k -> k.getValue().stream()
-                    .map(v -> idPerson.get(k.getKey()) + " - " + idArea.get(v)))
-            .collect(Collectors.toSet());
+      .collect(Collectors.toMap(Area::getId, Area::getName));
+    return persons.stream()
+      .flatMap(v -> personAreaIds.get(v.getId()).stream()
+        .map(a -> v.getFirstName() + " - " + idArea.get(a))
+      )
+      .collect(Collectors.toSet());
   }
 
   @Override

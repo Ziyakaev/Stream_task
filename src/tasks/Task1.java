@@ -4,11 +4,10 @@ import common.Person;
 import common.PersonService;
 import common.Task;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /*
@@ -21,20 +20,14 @@ import java.util.stream.Collectors;
 public class Task1 implements Task {
 
 	// !!! Редактируйте этот метод !!!
-    private List<Person> findOrderedPersons(List<Integer> personIds) {
-      Set<Person> persons = PersonService.findPersons(personIds);
-      if (persons == null || persons.isEmpty()) {
-        return Collections.emptyList();
-      }
-
-      Map<Integer, Person> idByPerson = new HashMap<>(persons.size());
-      // O(N)
-      persons.forEach(p -> idByPerson.put(p.getId(), p));
-      //O(N)
-      return personIds.stream()
-              .map(id -> idByPerson.get(id))
-              .collect(Collectors.toList()); // result 2 * O(N)
-    }
+	private List<Person> findOrderedPersons(List<Integer> personIds) {
+		Set<Person> persons = PersonService.findPersons(personIds);
+		Map<Integer, Person> idByPerson = persons.stream()
+		  .collect(Collectors.toMap(Person::getId, Function.identity()));
+		return personIds.stream()
+		  .map(idByPerson::get)
+		  .collect(Collectors.toList()); // result O(N)
+	}
 
 	@Override
 	public boolean check() {
