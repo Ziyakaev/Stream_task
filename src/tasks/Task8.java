@@ -3,11 +3,12 @@ package tasks;
 import common.Person;
 import common.Task;
 
+import java.time.Instant;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,75 +24,67 @@ P.P.S Здесь ваши правки желательно прокоммент
  */
 public class Task8 implements Task {
 
-  private long count;
+	private long count;
 
-  //Не хотим выдывать апи нашу фальшивую персону, поэтому конвертим начиная со второй
-  public List<String> getNames(List<Person> persons) {
-    if (persons.size() == 0) {
-      return Collections.emptyList();
-    }
-    persons.remove(0);
-    return persons.stream().map(Person::getFirstName).collect(Collectors.toList());
-  }
+	//Не хотим выдывать апи нашу фальшивую персону, поэтому конвертим начиная со второй
+	public List<String> getNames(List<Person> persons) {
+		return persons.stream().skip(1)
+		  .map(Person::getFirstName)
+		  .collect(Collectors.toList());
+	}
 
-  //ну и различные имена тоже хочется
-  public Set<String> getDifferentNames(List<Person> persons) {
-    return getNames(persons).stream().distinct().collect(Collectors.toSet());
-  }
+	//ну и различные имена тоже хочется
+	public Set<String> getDifferentNames(List<Person> persons) {
+		return new HashSet<>(getNames(persons));
+	}
 
-  //Для фронтов выдадим полное имя, а то сами не могут
-  public String convertPersonToString(Person person) {
-    String result = "";
-    if (person.getSecondName() != null) {
-      result += person.getSecondName();
-    }
+	//Для фронтов выдадим полное имя, а то сами не могут
+	public String convertPersonToString(Person person) {
+		return Stream.of(person.getFirstName(), person.getSecondName(), person.getMiddleName())
+		  .filter(Objects::nonNull)
+		  .collect(Collectors.joining(" "));
+	}
 
-    if (person.getFirstName() != null) {
-      result += " " + person.getFirstName();
-    }
+	// словарь id персоны -> ее имя
+	public Map<Integer, String> getPersonNames(Collection<Person> persons) {
+		return persons.stream()
+		  .collect(Collectors.toMap(Person::getId, Person::getFirstName, (a, b) -> a));
+	}
 
-    if (person.getSecondName() != null) {
-      result += " " + person.getSecondName();
-    }
-    return result;
-  }
+	// есть ли совпадающие в двух коллекциях персоны?
+	public boolean hasSamePersons(Collection<Person> persons1, Collection<Person> persons2) {
+		return persons1.stream().anyMatch(persons2::contains);
+	}
 
-  // словарь id персоны -> ее имя
-  public Map<Integer, String> getPersonNames(Collection<Person> persons) {
-    Map<Integer, String> map = new HashMap<>(1);
-    for (Person person : persons) {
-      if (!map.containsKey(person.getId())) {
-        map.put(person.getId(), convertPersonToString(person));
-      }
-    }
-    return map;
-  }
+	//...
+	public long countEven(Stream<Integer> numbers) {
+		return numbers.filter(num -> num % 2 == 0)
+		  .count();
+	}
 
-  // есть ли совпадающие в двух коллекциях персоны?
-  public boolean hasSamePersons(Collection<Person> persons1, Collection<Person> persons2) {
-    boolean has = false;
-    for (Person person1 : persons1) {
-      for (Person person2 : persons2) {
-        if (person1.equals(person2)) {
-          has = true;
-        }
-      }
-    }
-    return has;
-  }
+	@Override
+	public boolean check() {
+		Person person = new Person(1, "Oleg", "Tinkoff", "Urevich", Instant.now());
+		List<Person> persons = List.of(person,
+		  new Person(2, "German", "Gref", "Oscarovich", Instant.now()),
+		  new Person(3, "Boris", "Dobrodeev", "Olegovich", Instant.now()),
+		  new Person(4, "Oleg", "Dublicate", "Name", Instant.now()),
+		  new Person(5, "Mihail", "Zykov", "None", Instant.now())
+		);
 
-  //...
-  public long countEven(Stream<Integer> numbers) {
-    count = 0;
-    numbers.filter(num -> num % 2 == 0).forEach(num -> count++);
-    return count;
-  }
+		Set<String> differentNames = getDifferentNames(persons);
+		Map<Integer, String> idPersonName = getPersonNames(persons);
+		List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7);
+		long countEven = countEven(numbers.stream());
+		String fullName = convertPersonToString(person);
+		System.out.println("Слабо дойти до сюда и исправить Fail этой таски?");
+		boolean hasSamePerson = hasSamePersons(persons, List.of(person));
 
-  @Override
-  public boolean check() {
-    System.out.println("Слабо дойти до сюда и исправить Fail этой таски?");
-    boolean codeSmellsGood = false;
-    boolean reviewerDrunk = false;
-    return codeSmellsGood || reviewerDrunk;
-  }
+		return Set.of("Oleg", "German", "Boris", "Mihail").equals(differentNames)
+		  && ("Oleg Tinkoff Urevich").equals(fullName)
+		  && Map.of(1, "Oleg", 2, "German", 3, "Boris", 4, "Oleg", 5, "Mihail")
+		  .equals(idPersonName)
+		  && (countEven == 3)
+		  && hasSamePerson;
+	}
 }
